@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurant Menu</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+    }
+    header {
+      background-color: #333;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+    }
+    .menu-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+    .menu-item {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin: 10px;
+      padding: 15px;
+      width: 250px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .menu-item img {
+      max-width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .menu-item h3 {
+      margin: 10px 0 5px;
+      font-size: 18px;
+    }
+    .menu-item p {
+      margin: 5px 0;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Today's Menu</h1>
+  </header>
+  <div class="menu-container" id="menu-container">
+    <!-- Menu items will be inserted here -->
+  </div>
+
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
+
+  <script>
+    // TODO: Replace with your Firebase project configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgz-WspMM4ySuitU8uGPDGvqVStXql0mQ",
+      authDomain: "restaurant-eec7a.firebaseapp.com",
+      projectId: "restaurant-eec7a",
+      storageBucket: "restaurant-eec7a.firebasestorage.app",
+      messagingSenderId: "1065966155621",
+      appId: "1:1065966155621:android:8c708a500d23b2067d938c"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Fetch menu items from Firestore
+    async function fetchMenuItems() {
+      const menuContainer = document.getElementById('menu-container');
+      menuContainer.innerHTML = '<p>Loading...</p>';
+
+      try {
+        const snapshot = await db.collection('menu').orderBy('created_at', 'desc').get();
+        menuContainer.innerHTML = ''; // Clear the loading text
+
+        if (snapshot.empty) {
+          menuContainer.innerHTML = '<p>No menu items available.</p>';
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const item = doc.data();
+
+          // Create menu item card
+          const menuItem = document.createElement('div');
+          menuItem.className = 'menu-item';
+
+          menuItem.innerHTML = `
+            <img src="${item.image_url || 'https://via.placeholder.com/250'}" alt="${item.name}">
+            <h3>${item.name}</h3>
+            <p>Price: $${item.price.toFixed(2)}</p>
+          `;
+
+          menuContainer.appendChild(menuItem);
+        });
+      } catch (error) {
+        console.error('Error fetching menu items:', error);
+        menuContainer.innerHTML = '<p>Failed to load menu items.</p>';
+      }
+    }
+
+    // Call the function to fetch and display menu items
+    fetchMenuItems();
+  </script>
+</body>
+</html>
